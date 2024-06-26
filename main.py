@@ -6,7 +6,7 @@ from memory_profiler import profile, memory_usage
 import torch.utils.checkpoint as checkpoint
 from torch.utils.checkpoint import checkpoint_sequential, set_checkpoint_early_stop
 import tracemalloc
-from models import NN
+from models import NN_Graph, NN_Sequential
 import random
 import numpy as np
 import os
@@ -34,17 +34,9 @@ def train():
     device = torch.device("cpu")
                           
                    
-    model = NN().to(device)
+    model = NN_Graph().to(device)
 
-    
 
-    # nodes = {}
-    # for node in model.graph.nodes:
-    #     module = model.graph.nodes[node].module
-    #     if  isinstance(module, nn.Linear):
-    #         nodes[node] = module.weight.clone()
-
-    print(len(list(model.parameters())))
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     for epoch in range(1):
         model.train()
@@ -57,7 +49,6 @@ def train():
 
 
             # output =  model(data)
-            # # output = checkpoint_sequential(model, 3, data, use_reentrant=False)
 
             output =  model.forward_without_checkpoint(data)
           
@@ -71,12 +62,7 @@ def train():
                 print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
             break
 
-    # for node in model.graph.nodes:
-    #     module = model.graph.nodes[node].module
-    #     if  isinstance(module, nn.Linear):
-    #         print(node, torch.all(nodes[node] == module.weight) )
 
-# Preparando os dados
 transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
