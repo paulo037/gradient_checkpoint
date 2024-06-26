@@ -1,15 +1,13 @@
 import subprocess
-import psutil
-import time
-import threading
 from main import train
-
+import argparse
 
 def run_varieties():
     segments = [1, 2, 3, 4, 5]
     hidden_sizes = {'sequential': range(16, 257, 16), 'graph': range(1, 33)}
     models = ['graph', 'sequential']
-
+    with open('./stats.csv', 'w') as f:
+        f.write(f"model,segment_size,hidden_size,peak,time\n")
     for model in models:
         for segment_size in segments:
             for hidden_size in hidden_sizes[model]:
@@ -35,7 +33,10 @@ def run_varieties():
 def run_time_x_memory():
     segments = [1, 2, 3, 4, 5]
     hidden_sizes = {'sequential': [128], 'graph': [16]}
-    models = ['sequential']
+    models = ['graph', 'sequential']
+
+    with open('./time.csv', 'w') as f:
+        f.write(f"model,time,segment_size,memory\n")
 
     for model in models:
         for segment_size in segments:
@@ -55,4 +56,11 @@ def run_time_x_memory():
                 print(f"Erros:\n{stderr.decode()}")
 
 
-run_time_x_memory()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Train a model and log parameters.')
+    parser.add_argument('--do', type=str, help='Each function call', choices=['varieties', 'time_x_memory'])
+
+    if args.do == 'varieties':
+        run_varieties()
+    else :
+        run_time_x_memory()

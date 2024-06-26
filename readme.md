@@ -24,3 +24,32 @@ Este repositório contém uma implementação do gradiente checkpoint para grafo
 - **images.ipynb**: Notebook Jupyter utilizado para gerar as imagens presentes no artigo, contribuindo para a visualização dos resultados obtidos.
 
 Este repositório não só implementa o método de gradiente checkpoint para grafos gerais, mas também fornece as ferramentas necessárias para replicar os experimentos discutidos no artigo, facilitando a compreensão e validação dos resultados apresentados.
+
+# Instruções para Reproduzir os Resultados
+
+Para configurar e executar os experimentos descritos, siga as etapas abaixo:
+
+1. **Instale as Dependências:**
+
+   Execute o comando abaixo para instalar todas as dependências listadas no arquivo `requirements.txt`:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Execute os Experimentos de Variedades:**
+    Para iniciar o experimento de variedades, execute o seguinte comando:
+    ```bash
+    python3 exec.py --do varieties
+    ```
+
+3. **Execute os Experimentos de Tempo vs Memória:**
+    Para iniciar o experimento de análise de tempo versus memória, execute o comando abaixo:
+    ```bash
+    python3 exec.py --do time_x_memory
+    ```
+4. **Visualize os Resultados:**
+    Abra e execute o notebook images.ipynb para visualizar os resultados dos experimentos. Você pode fazer isso utilizando um ambiente como o Jupyter Notebook ou Jupyter Lab.
+
+5. **Personalize os Parâmetros dos Algoritmos:**
+    Se desejar alterar os parâmetros dos algoritmos, edite o arquivo `exec.py` conforme necessário.
