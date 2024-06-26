@@ -60,6 +60,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train a model and log parameters.')
     parser.add_argument('--do', type=str, help='Each function call', choices=['varieties', 'time_x_memory'])
 
+    args = parser.parse_args()
+    
     if args.do == 'varieties':
         run_varieties()
     else :
