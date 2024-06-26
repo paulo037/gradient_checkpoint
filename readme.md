@@ -6,7 +6,7 @@ Este repositório contém uma implementação do gradiente checkpoint para grafo
 
 - **models.py**: Contém a implementação de dois modelos discutidos no artigo, essenciais para demonstrar a eficácia do método de gradiente checkpoint.
 
-- **main.py**: Executa o modelo principal e foi usado para gerar as Figuras 5 e 6 do artigo. Para gerar os gráficos, o script inclui um comando que requer descomentários na linha 61 para executar apenas uma iteração do processo.
+- **main.py**: Executa o modelo principal e foi usado para gerar as Figuras 5 e 6 do artigo. Para gerar os gráficos, o script inclui um comando de break na linha 61 para executar apenas uma iteração do processo. Caso queira efetivamente treinar o modelo, é necessário comentá-la
 
     Para executar o script, utilize o seguinte comando:
     ```bash
