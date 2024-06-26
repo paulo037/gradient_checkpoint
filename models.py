@@ -45,11 +45,11 @@ class LinearBlock(nn.Module):
         return x
        
 class NN_Sequential(nn.Module):
-    def __init__(self):
+    def __init__(self, segment_size=3, hidden_size=16):
         super(NN_Sequential, self).__init__()
 
-        self.graph = Graph()
-        self.hidden_size = 32
+        self.graph = Graph(segment_size)
+        self.hidden_size = hidden_size
 
         self.graph.add_node(Node('1', nn.Conv2d(1, self.hidden_size, kernel_size=3, stride=1, padding=1)))
 
@@ -91,11 +91,11 @@ class NN_Sequential(nn.Module):
 
 
 class NN_Graph(nn.Module):
-    def __init__(self, segment_size=3):
+    def __init__(self, segment_size=3, hidden_size=16):
         super(NN_Graph, self).__init__()
     
         self.graph = Graph(segment_size)
-        self.hidden_size = 16
+        self.hidden_size = hidden_size
 
         # Nodes
         self.graph.add_node(Node('1', nn.Conv2d(1, self.hidden_size, kernel_size=3, stride=1, padding=1)))

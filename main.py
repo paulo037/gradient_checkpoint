@@ -1,18 +1,14 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from torchvision import datasets, transforms
-from memory_profiler import profile, memory_usage
-import torch.utils.checkpoint as checkpoint
-from torch.utils.checkpoint import checkpoint_sequential, set_checkpoint_early_stop
-import tracemalloc
 from models import NN_Graph, NN_Sequential
 import random
 import numpy as np
 import os
-import torch
+import argparse
+import time
 import resource
-
+import torch.nn as nn
+import torch.optim as optim
 
 # Set seeds for reproducibility
 def set_seed(seed):
@@ -30,11 +26,13 @@ set_seed(42)
 
 
 # @profile
-def train():
+def train(model, hidden_size, segment_size):
     device = torch.device("cpu")
                           
-                   
-    model = NN_Graph().to(device)
+    if model == 'graph':
+        model = NN_Graph(segment_size, hidden_size).to(device)
+    else:
+        model = NN_Sequential(segment_size, hidden_size).to(device)
 
 
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
@@ -46,11 +44,11 @@ def train():
 
             data.requires_grad_()
 
-
-
-            # output =  model(data)
-
-            output =  model.forward_without_checkpoint(data)
+            if segment_size <= 1:
+                output = model.forward_without_checkpoint(data)
+            
+            else:
+                output =  model(data)
           
 
             loss = nn.CrossEntropyLoss()(output, target)
@@ -63,16 +61,42 @@ def train():
             break
 
 
-transform = transforms.Compose([
+
+
+
+def main(stats_path, model, segment_size, hidden_size):
+    # Run the train() function
+    start_time = time.time()
+    train(model, hidden_size, segment_size)
+    end_time = time.time()
+
+    # Calculate elapsed time
+    elapsed_time = end_time - start_time
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+    with open(stats_path, 'a+') as f:
+        f.write(f"{model},{segment_size},{hidden_size},{peak},{elapsed_time:.2f}\n")
+
+
+if __name__ == "__main__":
+    transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
-])
+    ])
 
-train_dataset = datasets.MNIST('../data', train=True, download=True, transform=transform)
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1024, shuffle=False)
+    train_dataset = datasets.MNIST('../data', train=True, download=True, transform=transform)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1024, shuffle=False)
 
 
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Train a model and log parameters.')
+    parser.add_argument('--stats_path', type=str, help='Path to log status and parameters.')
+    parser.add_argument('--model', type=str, help='Model name')
+    parser.add_argument('--segment_size', type=int, help='Segment size for the model.')
+    parser.add_argument('--hidden_size', type=int, help='Hidden size parameter.')
 
-train()
+    args = parser.parse_args()
 
-print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024)
+    main(args.stats_path, args.model, args.segment_size, args.hidden_size)
+
+
