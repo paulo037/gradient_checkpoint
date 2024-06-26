@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.utils
+import torch.utils.checkpoint
 from torchviz import make_dot
 from torch.utils.checkpoint import checkpoint_sequential, checkpoint, set_checkpoint_early_stop
 from collections import defaultdict
@@ -27,6 +29,8 @@ class Graph(nn.Module):
         self.edges = defaultdict(list)
         self.final = None
         self.segment_size = segment_size
+        self.dp = {}
+        self.checkpoints = {}
 
     def add_node(self, node):
         self.nodes[node.name] = node
@@ -42,7 +46,7 @@ class Graph(nn.Module):
 
 
     def run_with_checkpoints(self, functions, segments, input):
-
+       
         def run_function(start, end, functions):
             def forward(input):
                 for j in range(start, end + 1):
@@ -66,8 +70,9 @@ class Graph(nn.Module):
             input = checkpoint(
                 run_function(start, end, functions),
                 input,
-                use_reentrant=True,
+                use_reentrant=False,
             )
+
 
 
         
@@ -78,6 +83,8 @@ class Graph(nn.Module):
         self.nodes['x'] = Node('x', lambda x: x)
 
         def dfs(node):
+            if node.name in self.dp:
+                return self.dp[node.name]
 
             # caso onde não tem inputs
             if not node.inputs:
@@ -87,8 +94,9 @@ class Graph(nn.Module):
             if len(node.inputs) == 1:
                 prev = self.nodes[node.inputs[0]]
                 functions = dfs(prev)
-
-                return functions + [lambda x:  node(x)]
+                
+                self.dp[node.name] = functions + [lambda x:  node(x)]
+                return self.dp[node.name]
 
             # caso onde tem mais de um input
             else:
@@ -101,15 +109,19 @@ class Graph(nn.Module):
                 def _func(x):
                     inputs = {}
                     for key in node.inputs:
-                        segments = ceil(len(childrens[key]) /  self.segment_size)
-                        out = self.run_with_checkpoints(childrens[key], segments, x)
-                        
+                        if len(childrens[key]) > 1:
+                            segments = ceil(len(childrens[key]) /  self.segment_size)
+                            out = self.run_with_checkpoints(childrens[key], segments, x)
+
+                        else:
+                            out = childrens[key][0](x)
                         inputs[key] = out
                     
                     inputs = [inputs[key] for key in node.inputs]
                     return  node(inputs)
 
-                return [_func]
+                self.dp[node.name] = [_func]
+                return self.dp[node.name]
 
         functions = dfs(self.nodes[self.final])
         segments = ceil(len(functions) / self.segment_size )

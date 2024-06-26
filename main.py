@@ -78,14 +78,15 @@ def main(stats_path, model, segment_size, hidden_size):
         f.write(f"{model},{segment_size},{hidden_size},{peak},{elapsed_time:.2f}\n")
 
 
-if __name__ == "__main__":
-    transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
-    ])
+transform = transforms.Compose([
+transforms.ToTensor(),
+transforms.Normalize((0.1307,), (0.3081,))
+])
 
-    train_dataset = datasets.MNIST('../data', train=True, download=True, transform=transform)
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1024, shuffle=False)
+train_dataset = datasets.MNIST('../data', train=True, download=True, transform=transform)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1024, shuffle=False)
+
+if __name__ == "__main__":
 
 
     # Parse command line arguments
